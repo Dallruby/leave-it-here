@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="intro-locked">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -18,6 +18,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard",-ap
 a{color:inherit}button{font-family:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--sage-d);outline-offset:3px;border-radius:8px}
 /* ===== doors ===== */
+html.intro-locked{overflow:hidden;overscroll-behavior:none}
+html.intro-locked body{position:fixed;inset:0;width:100%;overflow:hidden;touch-action:none}
 .doors{position:fixed;inset:0;z-index:60}
 .doors.done{pointer-events:none}
 .dl,.dr{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,.74),rgba(238,243,240,.64));backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1);transition:transform 1.5s cubic-bezier(.75,0,.2,1);overflow:hidden}
@@ -53,9 +55,9 @@ header.sc{box-shadow:0 1px 0 var(--line),0 8px 24px rgba(31,35,43,.05)}
 nav.tabs{display:flex;position:relative;order:3;width:100%;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none;padding:6px 0 8px;margin:0 -4px}
 nav.tabs::-webkit-scrollbar{display:none}
 @media (min-width:900px){nav.tabs{order:0;width:auto;margin:0 0 0 auto;padding:0;overflow:visible}}
-nav.tabs a{position:relative;z-index:1;flex:none;text-decoration:none;font-weight:500;font-size:15px;padding:8px 14px;color:var(--sub);transition:color .25s}
+nav.tabs a{display:inline-flex;align-items:center;justify-content:center;line-height:1.4;position:relative;z-index:1;flex:none;text-decoration:none;font-weight:500;font-size:15px;padding:8px 14px;color:var(--sub);transition:color .25s}
 nav.tabs a[aria-current="page"]{color:var(--ink);font-weight:600}
-.ind{position:absolute;z-index:0;top:4px;height:34px;border-radius:20px;background:var(--soft);transition:left .4s var(--ease),width .4s var(--ease)}
+.ind{position:absolute;z-index:0;top:0;width:0;height:0;border-radius:999px;background:var(--soft);transition:left .4s var(--ease),top .4s var(--ease),width .4s var(--ease),height .4s var(--ease)}
 nav.tabs a.ap{margin-left:auto;color:#fff;background:var(--ink);border-radius:30px;padding:10px 22px;font-weight:600}
 .menubtn{margin-left:auto;width:42px;height:42px;border:0;background:var(--soft);border-radius:14px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
 .menubtn i{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink);transition:transform .3s}
@@ -397,10 +399,6 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
     </div>
   </div>
 
-  <div class="dirx">
-    <div class="photo" data-r>원장 사진</div>
-    <div data-r><span class="lab">원장</span><div class="nm" style="font-size:clamp(28px,6vw,44px);font-weight:800;letter-spacing:-.045em;margin-top:14px">신중해</div><div class="rl">상담심리 박사, 불안 전문 12년</div><a class="tlink" href="#director" data-go="director">원장 소개 보기 <span class="ar">→</span></a></div>
-  </div>
 
   <div class="sec">
     <h2 class="h2" data-r>상담에 쓰는 기법</h2>
@@ -689,7 +687,9 @@ const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.targ
 function arm(sec){sec.querySelectorAll('[data-r]').forEach(el=>{el.classList.remove('in');ro.observe(el);});}
 /* routing */
 const pages=[...document.querySelectorAll('[data-page]')];let cur='home',entered=false,stageVisible=false;
-function moveInd(){const a=document.querySelector('nav.tabs a[aria-current="page"]:not(.ap)');const ind=$('ind');if(!a){ind.style.width='0';return;}ind.style.left=a.offsetLeft+'px';ind.style.width=a.offsetWidth+'px';}
+function moveInd(){const a=document.querySelector('nav.tabs a[aria-current="page"]:not(.ap)');const ind=$('ind');if(!a){ind.style.width='0';return;}ind.style.left=a.offsetLeft+'px';ind.style.top=a.offsetTop+'px';ind.style.width=a.offsetWidth+'px';ind.style.height=a.offsetHeight+'px';}
+new ResizeObserver(moveInd).observe($('nav'));
+document.fonts.ready.then(moveInd);
 function go(id,push){const el=document.getElementById(id);if(!el||!el.hasAttribute('data-page'))id='home';const changed=id!==cur;cur=id;
   pages.forEach(p=>{p.hidden=p.id!==id;p.classList.remove('pg-in');});const s=$(id);void s.offsetWidth;if(changed)s.classList.add('pg-in');
   document.querySelectorAll('nav.tabs a,.sheet a').forEach(a=>{if(a.dataset.go===id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
@@ -711,7 +711,7 @@ $('totop').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 /* doors */
 $('knock').onclick=()=>{const d=$('doors');d.classList.add('go');initAudio();ctx.resume();
   setTimeout(()=>{d.classList.add('open');au.play();},350);
-  setTimeout(()=>{d.classList.add('done');entered=true;updBar();arm($(cur));},1900);setTimeout(()=>d.remove(),2600);};
+  setTimeout(()=>{d.classList.add('done');document.documentElement.classList.remove('intro-locked');entered=true;fit();moveInd();updBar();arm($(cur));},1900);setTimeout(()=>d.remove(),2600);};
 $('gpp').onclick=()=>{initAudio();ctx.resume();if(au.ended)au.currentTime=0;au.paused?au.play():au.pause();};
 function gsync(){const p=!au.paused;$('gpp').textContent=p?'❚❚':'▶';$('gpp').setAttribute('aria-label',p?'일시정지':'재생');}
 au.addEventListener('play',gsync);au.addEventListener('pause',gsync);
