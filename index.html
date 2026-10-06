@@ -166,30 +166,54 @@ section.pg-in{animation:pgin .6s var(--ease)}
 .fine{margin-top:14px;font-size:13px;color:var(--sub)}
 /* ===== director ===== */
 .dhero{padding-top:40px;display:grid;gap:28px}
-@media (min-width:900px){.dhero{grid-template-columns:440px 1fr;gap:60px;align-items:center}}
+@media (min-width:900px){.dhero{grid-template-columns:440px 1fr;gap:60px;align-items:end}}
 .facts{margin:24px 0 0;display:grid;grid-template-columns:72px 1fr;gap:12px 16px;font-size:15px}
 .facts dt{color:var(--sub)}.facts dd{margin:0;font-weight:500}
-.dq{margin-top:28px;font-weight:700;font-size:clamp(21px,4vw,28px);letter-spacing:-.045em;line-height:1.4;min-height:2.8em;transition:opacity .4s,transform .4s var(--ease)}
+.speech{position:relative;margin:24px 0 0;padding:20px 24px;background:var(--soft2);border:1px solid #DCE6DF;border-radius:24px 24px 24px 6px}
+.speech::after{content:"";position:absolute;left:24px;bottom:-8px;width:16px;height:16px;background:var(--soft2);border-right:1px solid #DCE6DF;border-bottom:1px solid #DCE6DF;transform:rotate(45deg);border-radius:0 0 4px 0}
+.dq{margin:0;font-weight:700;font-size:clamp(21px,4vw,28px);letter-spacing:-.045em;line-height:1.4;transition:opacity .4s,transform .4s var(--ease)}
+#director .director-details{margin-top:48px}
 .dq.out{opacity:0;transform:translateY(10px)}
 /* ===== apply ===== */
-.steps{list-style:none;margin:32px 0 0;padding:0;display:grid;gap:12px;counter-reset:s}
-.steps li{counter-increment:s;background:var(--soft);border-radius:24px;padding:24px 22px 24px 76px;position:relative}
+.steps{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;counter-reset:s}
+.steps li{min-width:0;counter-increment:s;background:var(--soft);border-radius:24px;padding:24px 22px 24px 76px;position:relative}
 .steps li::before{content:counter(s);position:absolute;left:22px;top:22px;width:38px;height:38px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
 .steps b{display:block;font-weight:700;font-size:19px;letter-spacing:-.035em}
-.steps p{margin:4px 0 0;color:var(--sub);font-size:15px}
+.steps p{overflow-wrap:anywhere;margin:4px 0 0;color:var(--sub);font-size:15px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
 .btn.done{background:var(--sage-d)}
 details{margin-top:12px;font-size:14px}
 summary{cursor:pointer;color:var(--sub);font-weight:500}
-pre.ins{margin:10px 0 0;max-height:220px;overflow:auto;background:#fff;border-radius:14px;padding:14px;font-family:"Pretendard",sans-serif;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-.case{margin-top:14px;font-size:13px;background:#fff;border-radius:12px;padding:12px 14px;color:var(--sub);overflow-x:auto;white-space:nowrap}
-.after{margin-top:24px;display:grid;gap:12px}
+pre.ins{max-width:100%;min-width:0;margin:10px 0 0;max-height:220px;overflow:auto;background:#fff;border-radius:14px;padding:14px;font-family:"Pretendard",sans-serif;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.case{max-width:100%;margin-top:14px;font-size:13px;background:#fff;border-radius:12px;padding:12px 14px;color:var(--sub);overflow-x:auto;white-space:nowrap}
+.after{margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 @media (min-width:900px){.after{grid-template-columns:repeat(2,1fr)}}
-.after div{border:1px solid var(--line);border-radius:22px;padding:22px}
+.after div{min-width:0;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:22px;padding:22px}
 .after b{display:block;font-weight:700;font-size:17px}
 .after span{display:block;margin-top:4px;color:var(--sub);font-size:14px}
 footer{max-width:1160px;margin:0 auto;padding:30px 20px 150px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);display:flex;justify-content:space-between;gap:12px}
 footer b{color:var(--ink);font-weight:800;letter-spacing:-.04em}
+
+@media (max-width:599px){
+  #method .h1{font-size:clamp(26px,8vw,34px)}
+  #apply .top{padding-top:32px}
+  #apply .steps{margin-top:24px;gap:14px}
+  #apply .steps li{padding:20px;border-radius:20px}
+  #apply .steps li::before{left:20px;top:20px;width:30px;height:30px;font-size:14px}
+  #apply .steps b{min-height:30px;padding-left:42px;display:flex;align-items:center;font-size:18px;line-height:1.4}
+  #apply .steps p{margin-top:12px;line-height:1.65}
+  #apply .row{display:block}
+  #apply .row .btn{width:100%;padding:14px 16px;font-size:15px;line-height:1.4}
+  #apply details{margin-top:16px}
+  #apply pre.ins{padding:12px;overflow-wrap:anywhere}
+  #apply .case{white-space:normal;overflow-wrap:anywhere;word-break:break-word;font-size:12px;line-height:1.6}
+  #apply .after{margin-top:20px}
+  #apply .after div{padding:20px}
+  #apply .after span{line-height:1.65}
+  #director .dhero{gap:24px}
+  #director .speech{margin-top:22px;padding:18px 20px;border-radius:20px 20px 20px 6px}
+  #director .director-details{margin-top:36px}
+}
 /* ===== mini player ===== */
 .gbar{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translate(-50%,170%);z-index:35;width:min(720px,calc(100% - 20px));background:rgba(31,35,43,.95);color:#fff;border-radius:20px;padding:10px 16px 14px 10px;display:flex;align-items:center;gap:12px;transition:transform .5s var(--ease);box-shadow:0 14px 34px rgba(31,35,43,.25)}
 .gbar.show{transform:translate(-50%,0)}
@@ -392,7 +416,7 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 </section>
 
 <section id="method" data-page hidden>
-  <div class="top" data-r><span class="lab">상담 방식</span><h1 class="h1">불안을 없애는 대신,<br>불안이 있어도 움직일 수 있게</h1><p class="p">리브잇히어는 수용전념치료(ACT)를 바탕으로 상담합니다.</p></div>
+  <div class="top" data-r><span class="lab">상담 방식</span><h1 class="h1">불안을 없애는 대신<br>불안해도 움직일 수 있게</h1><p class="p">리브잇히어는<br>수용전념치료(ACT)를 바탕으로 상담합니다.</p></div>
   <div class="sec" style="margin-top:80px">
     <h2 class="h2" data-r>상담은 이렇게 진행돼요</h2>
     <ol class="flow">
@@ -427,13 +451,13 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
       <span class="lab">원장 소개</span><h1 class="h1">신중해</h1>
       <p class="p" style="margin-top:6px">Leave It Here 상담센터 원장</p>
       <dl class="facts"><dt>학위</dt><dd>상담심리 박사</dd><dt>수련</dt><dd>대학병원 정신건강의학과</dd><dt>전문</dt><dd>불안과 걱정</dd><dt>개업</dt><dd>12년째</dd></dl>
-      <p class="dq" id="dq" aria-live="polite">"설명은 안 해도 돼요. 읽는 건 제가 할게요."</p>
+      <div class="speech"><p class="dq" id="dq" aria-live="polite">"설명은 안 해도 돼요. 읽는 건 제가 할게요."</p></div>
     </div>
   </div>
-  <div class="sec" style="margin-top:90px">
+  <div class="sec director-details">
     <h2 class="h2" data-r>이런 사람이에요</h2>
     <div class="feats">
-      <div class="feat" data-r><h3 style="margin:0">말은 담백하게</h3><p>위로를 길게 늘어놓지 않아요.<br>인정할 건 인정하고<br>손쓸 수 있는 것으로 넘어가요</p></div>
+      <div class="feat" data-r><h3 style="margin:0">말은 담백하게</h3><p>위로를 길게 늘어놓지 않아요.<br>인정할 건 인정하고<br>손쓸 수 있는 것으로 넘어가요.</p></div>
       <div class="feat" data-r style="transition-delay:.08s"><h3 style="margin:0">다정함은 행동으로</h3><p>울면 말없이 휴지를 밀어 주고<br>식은 차를 다시 데워 와요.</p></div>
       <div class="feat" data-r style="transition-delay:.16s"><h3 style="margin:0">편들 땐 확실하게</h3><p>억울한 일엔 분명하게 편을 들고<br>스스로를 깎아내리면 바로잡아요.</p></div>
     </div>
