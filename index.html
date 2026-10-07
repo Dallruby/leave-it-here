@@ -234,9 +234,9 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}[data-r]{opacity:1;transform:none}}
 /* ===== stage ===== */
 .frame{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#cfd9de;box-shadow:0 18px 50px rgba(22,37,74,.25)}
-.stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden}
+.stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:#C9D6DB}
 /* ---------- world (camera) ---------- */
-.world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;will-change:transform}
+.world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;will-change:transform;background:#C9D6DB}
 .wall{position:absolute;inset:0;background:
  radial-gradient(ellipse 60% 55% at 50% 30%,rgba(255,244,222,.75),rgba(255,244,222,0) 70%),
  linear-gradient(180deg,#D7E2E6 0%,#C9D6DB 70%,#BCCBD1 100%)}
@@ -253,8 +253,9 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 .char.m{left:110px}.char.f{left:823px}
 .bob{position:absolute;inset:0;transform-origin:50% 75%;will-change:transform}
 .face{position:absolute;inset:0}
-.face img{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .12s linear}
-.face img.on{opacity:1}
+.face img{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:0}
+.face img.prev{opacity:1;z-index:1}
+.face img.on{opacity:1;z-index:2;transition:opacity .12s linear}
 .face.pop{animation:pop .28s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.035) translateY(-6px)}100%{transform:scale(1)}}
 .desk{position:absolute;left:-40px;right:-40px;top:705px;height:240px;background:linear-gradient(180deg,#A2714E 0,#8A5B3C 18px,#6E452C 60%,#5A3823 100%);border-top:6px solid #B98962;box-shadow:0 -10px 30px rgba(0,0,0,.18)}
@@ -563,6 +564,7 @@ const D={"turns": [{"t": 0.0, "s": "m", "l": ["여러분, 보통 심리 상담�
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=id=>document.getElementById(id);
 const au=$('au'),world=$('world'),stage=$('stage'),frame=$('frame');
+document.querySelectorAll('.face img').forEach(i=>{if(i.decode)i.decode().catch(()=>{});});
 /* --- fit stage --- */
 function fit(){const s=frame.clientWidth/1600;stage.style.transform=`scale(${s})`;}
 new ResizeObserver(fit).observe(frame);fit();
@@ -591,8 +593,16 @@ cam[0]={t:0,k:'wide'};cam.splice(1,0,{t:0.01,k:'wide'});
 function at(arr,time){let lo=0,hi=arr.length-1,r=-1;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].t<=time){r=m;lo=m+1}else hi=m-1}return r;}
 /* --- state --- */
 const chars={m:$('cm'),f:$('cf')};const curE={m:'base',f:'base'};let curCam=-1,curCue=-1,lastT=0,kwShown=new Set();
-function setExpr(c,e,fx){if(curE[c]===e)return;curE[c]=e;
-  const face=chars[c].querySelector('.face');face.querySelectorAll('img').forEach(i=>i.classList.toggle('on',i.dataset.e===e));
+// new face fades in over the old one, which stays fully opaque until the fade ends
+const exprN={m:0,f:0};
+function setExpr(c,e,fx){if(curE[c]===e)return;curE[c]=e;const n=++exprN[c];
+  const face=chars[c].querySelector('.face');const imgs=[...face.querySelectorAll('img')];
+  const old=imgs.find(i=>i.classList.contains('on')),nxt=imgs.find(i=>i.dataset.e===e);
+  imgs.forEach(i=>{if(i!==old)i.classList.remove('prev');});
+  if(old){old.getAnimations().forEach(a=>a.finish());old.classList.remove('on');old.classList.add('prev');}
+  nxt.classList.remove('prev');nxt.classList.add('on');
+  const drop=()=>{if(exprN[c]===n&&old)old.classList.remove('prev');};
+  Promise.all(nxt.getAnimations().map(a=>a.finished)).then(drop,()=>{});
   if(fx&&!RM){face.classList.remove('pop');void face.offsetWidth;face.classList.add('pop');spawnFx(c,e);}}
 function setCam(i,instant){curCam=i;const c=cam[i];const k=RM?'wide':c.k;const s=SH[k];
   const next=cam[i+1]?cam[i+1].t:DUR;const dur=Math.max(.5,next-c.t);
