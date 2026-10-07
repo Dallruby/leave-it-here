@@ -606,10 +606,14 @@ function setExpr(c,e,fx){if(curE[c]===e)return;curE[c]=e;const n=++exprN[c];
   if(fx&&!RM){face.classList.remove('pop');void face.offsetWidth;face.classList.add('pop');spawnFx(c,e);}}
 function setCam(i,instant){curCam=i;const c=cam[i];const k=RM?'wide':c.k;const s=SH[k];
   const next=cam[i+1]?cam[i+1].t:DUR;const dur=Math.max(.5,next-c.t);
-  const push=(k==='wide')?1.02:1.07;
-  const tf=(sc)=>`translate(${800-s.x*sc}px,${450-s.y*sc}px) scale(${sc})`;
-  world.style.transition='none';world.style.transform=tf(s.s);void world.offsetWidth;
-  if(!RM){world.style.transition=`transform ${dur}s linear`;world.style.transform=tf(s.s*push);}}
+  const push=RM?1:(k==='wide')?1.02:1.07;
+  camA={s,push,t0:performance.now(),dur:dur*1000};applyCam(camA.t0);}
+// slow push-in is stepped from the frame loop, not a CSS transition: compositor-run
+// transforms can show undrawn (white) tiles on phones when a cut zooms out
+let camA=null;
+function applyCam(now){if(!camA)return;const {s,push,t0,dur}=camA;
+  const sc=s.s*(1+(push-1)*Math.min(1,Math.max(0,(now-t0)/dur)));
+  world.style.transform=`translate(${800-s.x*sc}px,${450-s.y*sc}px) scale(${sc})`;}
 /* --- FX --- */
 const HEAD={m:{x:640,y:150,dir:1},f:{x:960,y:150,dir:-1}};
 function spawnFx(c,e){if(e==='base')return;const h=HEAD[c];const el=document.createElement('div');el.className='fx';
@@ -651,7 +655,7 @@ function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;las
   // exprs
   ['m','f'].forEach(c=>{const i=at(ex[c],t);if(i>=0)setExpr(c,ex[c][i].e,!jumped&&!au.paused);});
   // camera
-  const ci=at(cam,t);if(ci!==curCam&&ci>=0)setCam(ci,jumped);
+  const ci=at(cam,t);if(ci!==curCam&&ci>=0)setCam(ci,jumped);applyCam(performance.now());
   // subtitles
   let qi=-1;for(let i=0;i<cues.length;i++){if(t>=cues[i].s&&t<cues[i].e){qi=i;break}}
   if(qi!==curCue){curCue=qi;const sub=$('sub');if(qi<0){sub.classList.add('hide')}else{sub.classList.remove('hide');$('subt').textContent=cues[qi].x;$('who').className='who '+cues[qi].sp;fitSub();}}
