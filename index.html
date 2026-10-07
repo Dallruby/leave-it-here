@@ -253,11 +253,8 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 .char.m{left:110px}.char.f{left:823px}
 .bob{position:absolute;inset:0;transform-origin:50% 75%;will-change:transform}
 .face{position:absolute;inset:0}
-.face img{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:0}
-.face img.prev{opacity:1;z-index:1}
-.face img.on{opacity:1;z-index:2;transition:opacity .12s linear}
-.face.pop{animation:pop .28s cubic-bezier(.3,1.6,.5,1)}
-@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.035) translateY(-6px)}100%{transform:scale(1)}}
+.face img{position:absolute;inset:0;width:100%;height:100%;opacity:0}
+.face img.on{opacity:1}
 .desk{position:absolute;left:-40px;right:-40px;top:705px;height:240px;background:linear-gradient(180deg,#A2714E 0,#8A5B3C 18px,#6E452C 60%,#5A3823 100%);border-top:6px solid #B98962;box-shadow:0 -10px 30px rgba(0,0,0,.18)}
 .desk::after{content:"";position:absolute;left:0;right:0;top:0;height:22px;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
 .mic{position:absolute;height:300px}
@@ -358,10 +355,10 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
     <div class="onair" id="onair">ON AIR</div>
     <div class="wlogo"><img src="assets/title.webp" alt=""></div>
     <div class="char m" id="cm"><div class="bob"><div class="face">
-      <img data-e="base" class="on" src="assets/m_base.webp" alt=""><img data-e="wow" src="assets/m_wow.webp" alt=""><img data-e="laugh" src="assets/m_laugh.webp" alt=""><img data-e="think" src="assets/m_think.webp" alt="">
+      <img decoding="sync" data-e="base" class="on" src="assets/m_base.webp" alt=""><img decoding="sync" data-e="wow" src="assets/m_wow.webp" alt=""><img decoding="sync" data-e="laugh" src="assets/m_laugh.webp" alt=""><img decoding="sync" data-e="think" src="assets/m_think.webp" alt="">
     </div></div></div>
     <div class="char f" id="cf"><div class="bob"><div class="face">
-      <img data-e="base" class="on" src="assets/f_base.webp" alt=""><img data-e="wow" src="assets/f_wow.webp" alt=""><img data-e="laugh" src="assets/f_laugh.webp" alt=""><img data-e="think" src="assets/f_think.webp" alt="">
+      <img decoding="sync" data-e="base" class="on" src="assets/f_base.webp" alt=""><img decoding="sync" data-e="wow" src="assets/f_wow.webp" alt=""><img decoding="sync" data-e="laugh" src="assets/f_laugh.webp" alt=""><img decoding="sync" data-e="think" src="assets/f_think.webp" alt="">
     </div></div></div>
     <div class="desk"></div>
     <svg class="mug m" viewBox="0 0 90 110" aria-hidden="true"><g class="steam"><path d="M30 30c-8-10 8-16 0-28"/><path d="M45 30c-8-10 8-16 0-28"/><path d="M60 30c-8-10 8-16 0-28"/></g><path d="M12 40h58v52a12 12 0 0 1-12 12H24a12 12 0 0 1-12-12z" fill="#FBF8F2" stroke="#C9B49B" stroke-width="3"/><path d="M70 52c16 0 16 26 0 26" fill="none" stroke="#C9B49B" stroke-width="7"/><rect x="16" y="42" width="50" height="8" rx="3" fill="#C99A5B"/></svg>
@@ -593,17 +590,16 @@ cam[0]={t:0,k:'wide'};cam.splice(1,0,{t:0.01,k:'wide'});
 function at(arr,time){let lo=0,hi=arr.length-1,r=-1;while(lo<=hi){const m=(lo+hi)>>1;if(arr[m].t<=time){r=m;lo=m+1}else hi=m-1}return r;}
 /* --- state --- */
 const chars={m:$('cm'),f:$('cf')};const curE={m:'base',f:'base'};let curCam=-1,curCue=-1,lastT=0,kwShown=new Set();
-// new face fades in over the old one, which stays fully opaque until the fade ends
-const exprN={m:0,f:0};
-function setExpr(c,e,fx){if(curE[c]===e)return;curE[c]=e;const n=++exprN[c];
-  const face=chars[c].querySelector('.face');const imgs=[...face.querySelectorAll('img')];
-  const old=imgs.find(i=>i.classList.contains('on')),nxt=imgs.find(i=>i.dataset.e===e);
-  imgs.forEach(i=>{if(i!==old)i.classList.remove('prev');});
-  if(old){old.getAnimations().forEach(a=>a.finish());old.classList.remove('on');old.classList.add('prev');}
-  nxt.classList.remove('prev');nxt.classList.add('on');
-  const drop=()=>{if(exprN[c]===n&&old)old.classList.remove('prev');};
-  Promise.all(nxt.getAnimations().map(a=>a.finished)).then(drop,()=>{});
-  if(fx&&!RM){face.classList.remove('pop');void face.offsetWidth;face.classList.add('pop');spawnFx(c,e);}}
+// faces swap instantly and the pop rides on the bob transform: a fade or a CSS animation
+// on the face gives it its own GPU layer, which phones can show undrawn for a frame
+// (the bright wall flashes through the character)
+const popAt={m:-1e9,f:-1e9};
+function setExpr(c,e,fx){if(curE[c]===e)return;curE[c]=e;
+  chars[c].querySelectorAll('.face img').forEach(i=>i.classList.toggle('on',i.dataset.e===e));
+  if(fx&&!RM){popAt[c]=performance.now();spawnFx(c,e);}}
+const backOut=x=>1+2.70158*(x-1)**3+1.70158*(x-1)**2;
+function pop(c,now){const p=(now-popAt[c])/280;if(p<0||p>=1)return '';
+  const k=p<.4?backOut(p/.4):1-backOut((p-.4)/.6);return ` translateY(${-6*k}px) scale(${1+.035*k})`;}
 function setCam(i,instant){curCam=i;const c=cam[i];const k=RM?'wide':c.k;const s=SH[k];
   const next=cam[i+1]?cam[i+1].t:DUR;const dur=Math.max(.5,next-c.t);
   const push=RM?1:(k==='wide')?1.02:1.07;
@@ -667,8 +663,9 @@ function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;las
   const a=level();amp+= (a-amp)*.35;
   ['m','f'].forEach(c=>{const b=chars[c].firstElementChild;const dir=c==='m'?1:-1;
     if(RM){b.style.transform='none';return;}
-    if(c===sp&&!au.paused){b.style.transform=`translateY(${-amp*26}px) rotate(${dir*amp*2.2}deg) scale(${1+amp*.025})`;}
-    else{const br=Math.sin(now/650+(c==='m'?0:1.7))*2.5;const nod=Math.max(0,Math.sin(now/420))**8*3;b.style.transform=`translateY(${br+nod}px) rotate(${-dir*nod*.4}deg)`;}});
+    const pp=pop(c,performance.now());
+    if(c===sp&&!au.paused){b.style.transform=`translateY(${-amp*26}px) rotate(${dir*amp*2.2}deg) scale(${1+amp*.025})`+pp;}
+    else{const br=Math.sin(now/650+(c==='m'?0:1.7))*2.5;const nod=Math.max(0,Math.sin(now/420))**8*3;b.style.transform=`translateY(${br+nod}px) rotate(${-dir*nod*.4}deg)`+pp;}});
   drawVu(sp);
   $('time').textContent=`${fmt(t)} / ${fmt(DUR)}`;$('bari').style.width=(t/DUR*100)+'%';
   requestAnimationFrame(tick);}
