@@ -102,13 +102,19 @@ section.pg-in{animation:pgin .6s var(--ease)}
 .live{position:relative;margin:0 -20px;padding:18px 20px 20px;background:var(--ink);color:#fff;height:172px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
 @media (min-width:900px){.live{margin:14px 0 0;border-radius:20px;padding:22px 28px}}
 .live::before{content:"";position:absolute;left:0;right:0;top:0;height:70px;background:linear-gradient(var(--ink),rgba(31,35,43,0));z-index:1}
-.msg{display:flex;gap:10px;align-items:flex-start;max-width:92%;font-size:clamp(15px,2.2vw,19px);line-height:1.45;opacity:.38;transition:opacity .4s,transform .5s var(--ease);animation:msgin .5s var(--ease)}
-.msg.now{opacity:1}
+/* fades use color and slides use top, not opacity/transform: those get their own GPU layer
+   on phones, and rebuilding layers on every new line flashed the page white through the box */
+.msg{position:relative;display:flex;gap:10px;align-items:flex-start;max-width:92%;font-size:clamp(15px,2.2vw,19px);line-height:1.45;color:rgba(255,255,255,.38);transition:color .4s;animation:msgin .5s var(--ease)}
+.msg.now{color:#fff}
+.msg.still,.msg.still i{animation:none}
 .msg.f{align-self:flex-end;flex-direction:row-reverse;text-align:right}
-.msg i{flex:none;width:9px;height:9px;border-radius:50%;margin-top:.55em;background:#A9CDB4}
-.msg.f i{background:#EBAAA2}
+.msg i{flex:none;width:9px;height:9px;border-radius:50%;margin-top:.55em;background:rgba(169,205,180,.38);transition:background-color .4s;animation:dotin .5s var(--ease)}
+.msg.now i{background:#A9CDB4}
+.msg.f i{background:rgba(235,170,162,.38)}
+.msg.f.now i{background:#EBAAA2}
 .msg.now span{font-weight:600}
-@keyframes msgin{from{opacity:0;transform:translateY(16px)}}
+@keyframes msgin{from{color:rgba(255,255,255,0);top:16px}}
+@keyframes dotin{from{background-color:transparent}}
 .lv-idle{color:rgba(255,255,255,.5);font-size:15px}
 .state{margin-top:96px;display:grid;gap:26px}
 @media (min-width:900px){.state{grid-template-columns:1.2fr .8fr;align-items:end}}
@@ -728,7 +734,7 @@ function gsync(){const p=!au.paused;$('gpp').textContent=p?'❚❚':'▶';$('gpp
 au.addEventListener('play',gsync);au.addEventListener('pause',gsync);
 /* live transcript */
 const live=$('live');let lastLive=-2;
-function pushMsg(i,animate){const c=cues[i];const m=document.createElement('div');m.className='msg now '+c.sp;if(!animate)m.style.animation='none';m.innerHTML='<i></i><span></span>';m.lastChild.textContent=c.x;
+function pushMsg(i,animate){const c=cues[i];const m=document.createElement('div');m.className='msg now '+c.sp;if(!animate)m.classList.add('still');m.innerHTML='<i></i><span></span>';m.lastChild.textContent=c.x;
   live.querySelectorAll('.msg.now').forEach(x=>x.classList.remove('now'));live.querySelector('.lv-idle')?.remove();live.appendChild(m);
   while(live.querySelectorAll('.msg').length>4)live.querySelector('.msg').remove();}
 const eqs=[...document.querySelectorAll('.eq i')];
