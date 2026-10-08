@@ -98,11 +98,12 @@ section[hidden]{display:none}
 .hero .frame{border-radius:0;box-shadow:none}
 @media (min-width:900px){.hero .frame{border-radius:24px;box-shadow:0 30px 60px rgba(31,35,43,.12)}}
 .stage .sub{display:none!important}
-.live{position:relative;margin:0 -20px;padding:18px 20px 20px;background:var(--ink);color:#fff;height:172px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+.live{position:relative;will-change:transform;margin:0 -20px;padding:18px 20px 20px;background:var(--ink);color:#fff;height:172px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
 @media (min-width:900px){.live{margin:14px 0 0;border-radius:20px;padding:22px 28px}}
 .live::before{content:"";position:absolute;left:0;right:0;top:0;height:70px;background:linear-gradient(var(--ink),rgba(31,35,43,0));z-index:1}
-/* fades use color and slides use top, not opacity/transform: those get their own GPU layer
-   on phones, and rebuilding layers on every new line flashed the page white through the box */
+/* .live keeps its own layer: line slides repaint only this box, and a late frame shows the
+   box's own background instead of the white page. Fades use color and slides use top so no
+   extra layers come and go inside it */
 .msg{position:relative;display:flex;gap:10px;align-items:flex-start;max-width:92%;font-size:clamp(15px,2.2vw,19px);line-height:1.45;color:rgba(255,255,255,.38);transition:color .4s;animation:msgin .5s var(--ease)}
 .msg.now{color:#fff}
 .msg.still,.msg.still i{animation:none}
@@ -230,7 +231,7 @@ footer b{color:var(--ink);font-weight:800;letter-spacing:-.04em}
 .eq i{width:3px;background:#A9CDB4;border-radius:2px;height:4px;transition:height .1s}
 .gline{flex:1;min-width:0;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gprog{position:absolute;left:16px;right:16px;bottom:6px;height:2px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden}
-.gprog i{display:block;height:100%;width:0;background:#fff}
+.gprog i{display:block;height:100%;width:100%;background:#fff;transform-origin:0 0;transform:scaleX(0);will-change:transform}
 .totop{will-change:transform;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:36;width:48px;height:48px;border-radius:50%;border:0;background:#fff;color:var(--ink);box-shadow:0 8px 24px rgba(31,35,43,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transform:translateY(12px) scale(.9);transition:opacity .3s,visibility .3s,transform .4s var(--ease),bottom .45s var(--ease)}
 .totop.on{opacity:1;visibility:visible;transform:none}
 .totop:active{transform:scale(.92)}
@@ -290,7 +291,7 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 .sub .who{flex:none;width:18px;height:18px;border-radius:50%}
 .sub .who.m{background:#8FB29A}.sub .who.f{background:#E29A93}
 .bar{position:absolute;left:0;right:0;bottom:0;height:12px;background:rgba(22,37,74,.25);pointer-events:auto;cursor:pointer}
-.bar i{display:block;height:100%;width:0;background:#F7C948}
+.bar i{display:block;height:100%;width:100%;background:#F7C948;transform-origin:0 0;transform:scaleX(0);will-change:transform}
 .ctl{position:absolute;right:28px;top:24px;display:flex;gap:10px;align-items:center;pointer-events:auto}
 .ctl button{width:58px;height:58px;border-radius:50%;border:0;background:rgba(251,248,242,.92);color:#16254A;font-size:24px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15)}
 .ctl button:focus-visible,.start button:focus-visible{outline:4px solid #F7C948;outline-offset:3px}
@@ -663,6 +664,8 @@ function drawVu(sp){vx.clearRect(0,0,340,100);if(!an)return;an.getByteFrequencyD
   for(let i=0;i<n;i++){const v=fbuf[2+i*4]/255;const h=Math.max(4,v*90);vx.fillStyle=sp==='m'?'#8FB29A':'#E29A93';vx.fillRect(i*17,95-h,12,h);}}
 function fitSub(){const sub=$('sub');let fs=40;sub.style.fontSize=fs+'px';while(sub.scrollWidth>1480&&fs>24){fs-=1;sub.style.fontSize=fs+'px';}}
 /* --- loop --- */
+// only touch text that changed: rewriting the same string still repaints its layer
+const setText=(el,v)=>{if(el.textContent!==v)el.textContent=v;};
 const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;lastT=t;
   // turn
@@ -686,7 +689,7 @@ function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;las
     if(c===sp&&!au.paused){b.style.transform=`translateY(${-amp*26}px) rotate(${dir*amp*2.2}deg) scale(${1+amp*.025})`+pp;}
     else{const br=Math.sin(now/650+(c==='m'?0:1.7))*2.5;const nod=Math.max(0,Math.sin(now/420))**8*3;b.style.transform=`translateY(${br+nod}px) rotate(${-dir*nod*.4}deg)`+pp;}});
   drawVu(sp);
-  $('time').textContent=`${fmt(t)} / ${fmt(DUR)}`;$('bari').style.width=(t/DUR*100)+'%';
+  setText($('time'),`${fmt(t)} / ${fmt(DUR)}`);$('bari').style.transform=`scaleX(${t/DUR})`;
   requestAnimationFrame(tick);}
 requestAnimationFrame(tick);
 /* --- controls --- */
@@ -754,8 +757,8 @@ function pushMsg(i,animate){const c=cues[i];const m=document.createElement('div'
 const eqs=[...document.querySelectorAll('.eq i')];
 setInterval(()=>{const t=au.currentTime;let qi=-1;for(let i=0;i<cues.length;i++){if(t>=cues[i].s&&t<cues[i].e){qi=i;break}}
   if(qi!==lastLive&&qi>=0){if(Math.abs(qi-lastLive)>1){live.querySelectorAll('.msg').forEach(x=>x.remove());for(let k=Math.max(0,qi-2);k<qi;k++)pushMsg(k,false);}pushMsg(qi,true);lastLive=qi;}
-  $('gtxt').textContent=qi>=0?cues[qi].x:'';$('gprog').style.width=(t/DUR*100)+'%';
-  eqs.forEach((e,i)=>{e.style.height=au.paused?'4px':(4+Math.random()*12*Math.max(.25,amp*3))+'px';});},150);
+  setText($('gtxt'),qi>=0?cues[qi].x:'');$('gprog').style.transform=`scaleX(${t/DUR})`;
+  if($('gbar').classList.contains('show'))eqs.forEach((e,i)=>{e.style.height=au.paused?'4px':(4+Math.random()*12*Math.max(.25,amp*3))+'px';});},150);
 /* copy */
 $('copy').onclick=async()=>{const b=$('copy'),txt=$('ins').textContent;let ok=false;
   try{await navigator.clipboard.writeText(txt);ok=true;}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{ok=document.execCommand('copy');}catch(_){}ta.remove();}
