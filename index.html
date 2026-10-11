@@ -203,7 +203,8 @@ pre.ins{max-width:100%;min-width:0;margin:10px 0 0;max-height:220px;overflow:aut
 .after div{min-width:0;overflow-wrap:anywhere;border:1px solid var(--line);border-radius:22px;padding:22px}
 .after b{display:block;font-weight:700;font-size:17px}
 .after span{display:block;margin-top:4px;color:var(--sub);font-size:14px}
-footer{max-width:1160px;margin:0 auto;padding:30px 20px 150px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);display:flex;justify-content:space-between;gap:12px}
+footer{max-width:1160px;margin:0 auto;padding:30px 20px 150px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer .disc{flex-basis:100%;margin:4px 0 0;line-height:1.6}
 footer b{color:var(--ink);font-weight:800;letter-spacing:-.04em}
 
 @media (max-width:599px){
@@ -443,7 +444,6 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
       <li><a href="https://accesson.kr/kjcp/assets/pdf/16875/journal-33-2-341.pdf" target="_blank" rel="noopener">한국어 인지적 탈융합 처치 연구</a><br>한국심리학회지: 임상</li>
       <li><a href="https://scholars.mssm.edu/en/publications/alliance-rupture-repair-a-meta-analysis-2/" target="_blank" rel="noopener">상담 관계의 균열과 회복 메타분석</a><br>Eubanks 외, 2018</li>
     </ul>
-    <p class="fine">본 작품은 크랙의 가상 AI 캐릭터로, 실제 상담·치료를 대신하지 않습니다.</p>
   </div>
 </section>
 
@@ -554,7 +554,7 @@ Final Output
   </div>
 </section>
 </main>
-<footer><b>Leave It Here</b><span>상담센터</span></footer>
+<footer><b>Leave It Here</b><span>상담센터</span><p class="disc">본 작품은 크랙의 가상 AI 캐릭터로,<br>실제 상담·치료를 대신하지 않습니다</p></footer>
 
 <button class="totop" id="totop" aria-label="맨 위로"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16V4M4.5 9.5 10 4l5.5 5.5"/></svg></button>
 <div class="gbar" id="gbar" role="region" aria-label="팟캐스트 플레이어">
