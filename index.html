@@ -699,13 +699,14 @@ function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;las
   setText($('time'),`${fmt(t)} / ${fmt(DUR)}`);$('bari').style.transform=`scaleX(${t/DUR})`;
   requestAnimationFrame(tick);}
 requestAnimationFrame(tick);
-/* --- director video: plays with sound, so it and the podcast never play together --- */
-const dv=$('dvid'),dbox=$('dbox');
-dbox.addEventListener('click',()=>{if(dv.paused){if(!au.paused)au.pause();dv.play().catch(()=>{});}else dv.pause();});
+/* --- director video: plays with sound, so it and the podcast never play together;
+   if the podcast was playing, it picks up again when the video ends --- */
+const dv=$('dvid'),dbox=$('dbox');let podResume=false;
+dbox.addEventListener('click',()=>{if(dv.paused){if(!au.paused){podResume=true;au.pause();}dv.play().catch(()=>{});}else dv.pause();});
 dv.addEventListener('play',()=>dbox.classList.add('playing'));
 dv.addEventListener('pause',()=>dbox.classList.remove('playing'));
-dv.addEventListener('ended',()=>dv.load());
-au.addEventListener('play',()=>{if(!dv.paused)dv.pause();});
+dv.addEventListener('ended',()=>{dv.load();if(podResume){podResume=false;initAudio();ctx.resume();au.play();}});
+au.addEventListener('play',()=>{podResume=false;if(!dv.paused)dv.pause();});
 /* --- controls --- */
 const onair=$('onair');
 function sync(){const p=!au.paused;onair.classList.toggle('on',p);stage.classList.toggle('playing',p);$('pp').textContent=p?'❚❚':'▶';$('pp').setAttribute('aria-label',p?'일시정지':'재생');}
