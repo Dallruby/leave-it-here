@@ -128,6 +128,10 @@ section[hidden]{display:none}
 .dirx{margin-top:110px;display:grid;gap:22px;align-items:center}
 @media (min-width:900px){.dirx{grid-template-columns:420px 1fr;gap:56px}}
 .photo{aspect-ratio:4/5;border-radius:28px;background:linear-gradient(160deg,var(--soft2),var(--soft));display:flex;align-items:center;justify-content:center;color:var(--sub);font-weight:500;font-size:14px;overflow:hidden;position:relative}
+.photo.vid{aspect-ratio:4/3;background:#1d222a;cursor:pointer}
+.photo video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.vplay{position:absolute;left:16px;bottom:16px;width:56px;height:56px;border-radius:50%;border:0;padding:0 0 0 4px;background:rgba(255,255,255,.92);color:var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.photo.playing .vplay{display:none}
 .dirx blockquote{margin:16px 0 0;font-weight:700;font-size:clamp(24px,4.6vw,36px);line-height:1.35;letter-spacing:-.045em}
 .dirx .nm{margin-top:22px;font-weight:700;font-size:18px}
 .dirx .rl{color:var(--sub);font-size:15px}
@@ -445,7 +449,10 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
 
 <section id="director" data-page hidden>
   <div class="dhero">
-    <div class="photo" data-r>원장 사진</div>
+    <div class="photo vid" id="dbox" data-r>
+      <video id="dvid" src="assets/director.mp4" poster="assets/director.webp" playsinline preload="none" aria-label="신중해 원장 영상"></video>
+      <button class="vplay" id="dplay" aria-label="원장 영상 재생, 소리가 나와요"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></button>
+    </div>
     <div data-r>
       <span class="lab">원장 소개</span><h1 class="h1">신중해</h1>
       <p class="p" style="margin-top:6px">Leave It Here 상담센터 원장</p>
@@ -692,6 +699,13 @@ function tick(now){const t=au.currentTime;const jumped=Math.abs(t-lastT)>1.2;las
   setText($('time'),`${fmt(t)} / ${fmt(DUR)}`);$('bari').style.transform=`scaleX(${t/DUR})`;
   requestAnimationFrame(tick);}
 requestAnimationFrame(tick);
+/* --- director video: plays with sound, so it and the podcast never play together --- */
+const dv=$('dvid'),dbox=$('dbox');
+dbox.addEventListener('click',()=>{if(dv.paused){if(!au.paused)au.pause();dv.play().catch(()=>{});}else dv.pause();});
+dv.addEventListener('play',()=>dbox.classList.add('playing'));
+dv.addEventListener('pause',()=>dbox.classList.remove('playing'));
+dv.addEventListener('ended',()=>dv.load());
+au.addEventListener('play',()=>{if(!dv.paused)dv.pause();});
 /* --- controls --- */
 const onair=$('onair');
 function sync(){const p=!au.paused;onair.classList.toggle('on',p);stage.classList.toggle('playing',p);$('pp').textContent=p?'❚❚':'▶';$('pp').setAttribute('aria-label',p?'일시정지':'재생');}
@@ -725,7 +739,7 @@ function moveInd(){const a=document.querySelector('nav.tabs a[aria-current="page
 new ResizeObserver(moveInd).observe($('nav'));
 document.fonts.ready.then(moveInd);
 function go(id,push){const el=document.getElementById(id);if(!el||!el.hasAttribute('data-page'))id='home';const changed=id!==cur;cur=id;
-  pages.forEach(p=>{p.hidden=p.id!==id;});const s=$(id);if(changed)rise(s,600,22);
+  pages.forEach(p=>{p.hidden=p.id!==id;});if(id!=='director'&&!dv.paused)dv.pause();const s=$(id);if(changed)rise(s,600,22);
   document.querySelectorAll('nav.tabs a,.sheet a').forEach(a=>{if(a.dataset.go===id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   if(push)history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:changed?'instant':'smooth'});closeSheet();fit();arm(s);moveInd();updBar();}
 document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.go,true);}));
