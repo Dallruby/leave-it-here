@@ -477,12 +477,12 @@ body.barup .totop{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
   <ol class="steps">
     <li data-r><b>아래 버튼 클릭</b><p>버튼을 누르면 사전 접수지 양식이 복사돼요.</p>
       <div class="row"><button class="btn fill" id="copy">접수지 양식 복사</button></div>
-      <details><summary>양식 내용 보기</summary><pre class="ins" id="ins">ACT Case Formulation Extractor v7
+      <details><summary>양식 내용 보기</summary><pre class="ins" id="ins">ACT Case Formulation Extractor v8
 
 Role &amp; Output
 - Task: build an ACT-informed case formulation of the user from the full available conversation history and saved memory, for counseling intake.
 - Mode: retrieval + selection + compression only. No advice, comfort, diagnosis, labels, speculation, causal claims, or interpretation.
-- Search across the full span of available history, oldest to newest. Do not overfocus on recent chats.
+- Search across the full span of available history, oldest to newest. Use the whole span to describe the person (BG, HB, VL, SC, LX, CA), but weight the last 1~3 months most for current concerns (LD, EV, EM, WR).
 - Values in Korean; field codes stay in English.
 
 Process
@@ -493,7 +493,8 @@ Selection
 - Priority: ① personal emotional disclosures ② real-life problems and stressors ③ identity, interests, joys, and valued activities.
 - Emotional remarks inside work or project chats (&quot;I hate this&quot;, &quot;why am I like this&quot;) count as ①.
 - One deep disclosure may matter even if said once. Prefer repeated patterns when available.
-- The newest crisis is not the whole person; include material from older periods.
+- Recent first: within every field, list items newest first. LD, EM, and WR describe the user&#x27;s current state.
+- Put resolved or older problems after current ones and mark each with (지난). Never present a past problem as current.
 - Exclude task-level or project-execution details unless they reveal a broader life concern, coping pattern, value, or stressor.
 - Work/projects combined max 25%.
 - No single person, animal, job, illness, project, or incident may lead more than 2 fields. SC, EM, VL must each draw from at least 2 different themes when evidence exists.
@@ -533,7 +534,7 @@ Compression
 - HARD LIMIT: the entire [CASE] line must be 440 Korean characters or fewer, counting spaces, punctuation, slashes, codes, and DT. It will be pasted into a field that rejects 450 or more.
 - The ``` code fences do NOT count toward the limit.
 - Aim for 380~420 characters so the limit is never exceeded.
-- Compress by removing, in this order: repetition → measurements/dates/technical details → weak evidence → redundant qualifiers → lower-priority fields.
+- Compress by removing, in this order: repetition → (지난) items → measurements/dates/technical details → weak evidence → redundant qualifiers → lower-priority fields.
 - DT is always first and never dropped or changed.
 - Field priority when space runs out, keep first: WR, EM, SC, LD, BG, HB, LX, CA, VL; drop first: EV (if already covered by LD), CP, PP, RR.
 - Shorten grammar before shortening meaning. Prefer compact noun phrases over vague shorthand.
